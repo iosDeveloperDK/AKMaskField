@@ -45,6 +45,13 @@ import UIKit
  
  */
 
+public enum AKMaskFieldCapitaliztion {
+    case uppercase
+    case lowercase
+    case `default`
+}
+
+
 open class AKMaskField: UITextField, UITextFieldDelegate  {
     
     //  MARK: - Configuring the Mask Field
@@ -64,6 +71,8 @@ open class AKMaskField: UITextField, UITextFieldDelegate  {
      Default value of this property is `nil`.
      
      */
+    
+    open var capitalization: AKMaskFieldCapitaliztion = .`default`
     
     @IBInspectable open var maskExpression: String? {
         didSet {
@@ -126,7 +135,7 @@ open class AKMaskField: UITextField, UITextFieldDelegate  {
             updateMaskTemplateText()
             
             #if AKMaskFieldDEBUG
-                debugmaskBlocks()
+            debugmaskBlocks()
             #endif
         }
     }
@@ -278,7 +287,7 @@ open class AKMaskField: UITextField, UITextFieldDelegate  {
     
     //  MARK: - Displayed Properties
     
-    fileprivate var maskText: String!
+    open var maskText: String!
     
     fileprivate var maskTemplateText: String!
     
@@ -292,7 +301,7 @@ open class AKMaskField: UITextField, UITextFieldDelegate  {
     
     deinit {
         #if AKMaskFieldDEBUG
-            print("\(type(of: self)) \(#function)")
+        print("\(type(of: self)) \(#function)")
         #endif
     }
     
@@ -382,6 +391,23 @@ open class AKMaskField: UITextField, UITextFieldDelegate  {
         }
         
         AKMaskFieldUtility.maskField(self, moveCaretToPosition: position)
+    }
+    
+    //    open override func caretRect(for position: UITextPosition) -> CGRect {
+    //        return CGRect.zero
+    //    }
+    
+    open override func selectionRects(for range: UITextRange) -> [Any] {
+        return []
+    }
+    
+    open override func canPerformAction(_ action: Selector, withSender sender: Any?) -> Bool {
+        if action == #selector(copy(_:)) || action == #selector(selectAll(_:)) || action == #selector(paste(_:)) {
+            
+            return false
+        }
+        
+        return false
     }
     
     //  MARK: - UITextFieldDelegate
@@ -511,6 +537,14 @@ open class AKMaskField: UITextField, UITextFieldDelegate  {
                 // Prepare data
                 
                 var _string = processedBlock.string
+                switch self.capitalization {
+                case .lowercase:
+                    _string = _string.lowercased()
+                case .uppercase:
+                    _string = _string.uppercased()
+                case .default:
+                    break
+                }
                 
                 // Grab all changed data
                 let shouldChangeBlock = maskDelegate?
